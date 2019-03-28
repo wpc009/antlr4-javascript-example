@@ -1,23 +1,17 @@
 
 const http = require('http');
 const antlr4 = require('antlr4/index');
-const ChatLexer = require('./ChatLexer').ChatLexer;
-const ChatParser = require('./ChatParser').ChatParser;
+const FormulaLexer = require('./FormulaLexer').FormulaLexer;
+const FormulaParser = require('./FormulaParser').FormulaParser;
 const HtmlChatListener = require('./HtmlChatListener').HtmlChatListener;
+const PrintVisitor = require('./PrintVisitor');
 
-http.createServer((req, res) => {
-    res.writeHead(200, {
-        'Content-Type': 'text/html'
-    });
-
-    res.write('<html><body>');
-
-    const input = 'peter SAYS: hello :-) \npaul SHOUTS: ayo :)\n';
+    const input = 'somefunc(_489, _591)';
 
     const chars = new antlr4.InputStream(input);
-    const lexer = new ChatLexer(chars);
+    const lexer = new FormulaLexer(chars);
     const tokens = new antlr4.CommonTokenStream(lexer);
-    const parser = new ChatParser(tokens);
+    const parser = new FormulaParser(tokens);
     parser.buildParseTrees = true;
 
     /**
@@ -25,12 +19,7 @@ http.createServer((req, res) => {
      * You want to invoke the parser specifying a rule which typically is the first rule. 
      * However you can actually invoke any rule directly.
      */
-    const tree = parser.chat();
+    const tree = parser.formula();
     
-    const htmlChat = new HtmlChatListener(res);
-    antlr4.tree.ParseTreeWalker.DEFAULT.walk(htmlChat, tree);
-
-    res.write('</body></html>');
-    res.end();
-
-}).listen(1337);
+    
+tree.accept(new PrintVisitor())
